@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: test (node ${{ matrix.node-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: ['20', '22', '24']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: syntax check
+        run: npm run check:syntax
+      - name: unit tests
+        run: npm test
+
+  cli:
+    name: cli contract
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: passing pair exits 0
+        run: node src/cli.js '#000' '#fff' > /dev/null
+      - name: failing pair exits 1
+        run: |
+          set +e
+          out=$(node src/cli.js '#777777' '#ffffff' --size 12)
+          code=$?
+          set -e
+          if [ "$code" -ne 1 ]; then
+            echo "expected exit code 1, got $code"
+            exit 1
+          fi
+          printf '%s\n' "$out" | grep -q '^FAIL$'
+      - name: bad color exits 2
+        run: |
+          set +e
+          node src/cli.js 'blurple' '#ffffff' > /dev/null
+          code=$?
+          set -e
+          if [ "$code" -ne 2 ]; then
+            echo "expected exit code 2, got $code"
+            exit 1
+          fi
+      - name: json output is parsable
+        run: node src/cli.js '#767676' '#ffffff' --json | node -e "const p=JSON.parse(require('fs').readFileSync(0,'utf8')); if (p.ratio !== 4.54 || p.passes !== true) { throw new Error('unexpected payload: ' + JSON.stringify(p)); }"
+
+  coverage:
+    name: coverage report
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm run coverage
