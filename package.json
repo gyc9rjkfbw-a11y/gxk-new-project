@@ -1,0 +1,30 @@
+{
+  "name": "@gxk/contrast",
+  "version": "0.1.0",
+  "description": "Zero-dependency WCAG 2.2 contrast checking for hex and rgb() colors.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "bin": {
+    "gxk-contrast": "./src/cli.js"
+  },
+  "files": [
+    "src"
+  ],
+  "scripts": {
+    "test": "node --test",
+    "coverage": "node --test --experimental-test-coverage",
+    "check:syntax": "node scripts/check-syntax.mjs"
+  },
+  "keywords": [
+    "accessibility",
+    "a11y",
+    "wcag",
+    "contrast"
+  ],
+  "license": "MIT"
+}
