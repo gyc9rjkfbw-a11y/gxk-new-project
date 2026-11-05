@@ -58,7 +58,7 @@ jobs:
             exit 1
           fi
       - name: json output is parsable
-        run: node src/cli.js '#767676' '#ffffff' --json | node -e "const p=JSON.parse(require('fs').readFileSync(0,'utf8')); if (p.ratio !== 4.54 || p.passes !== true) { throw new Error('unexpected payload: ' + JSON.stringify(p)); }"
+        run: node scripts/check-json.mjs
 
   coverage:
     name: coverage report
